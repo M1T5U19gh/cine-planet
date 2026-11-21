@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cine-Planet</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Barlow+Condensed:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="navbar">
+    <a class="logo" href="#filmes">CINE-PLANET</a>
+    <nav><a href="#filmes">Filmes</a><a href="#sobre">Sobre</a></nav>
+  </header>
+
+  <main>
+    <section id="filmes">
+      <h1>Em Cartaz</h1>
+      <p id="aviso">Carregando filmes...</p>
+      <div class="grid"></div>
+    </section>
+
+    <section id="sobre">
+      <h2>Sobre</h2>
+      <p>O Cine-Planet reúne informações sobre filmes para você escolher o que assistir.</p>
+    </section>
+  </main>
+
+  <footer>© 2026 Cine-Planet · Poá, São Paulo</footer>
+
+  <script>
+    const esc = t => String(t ?? "").replace(/[&<>"']/g, c => `&#${c.charCodeAt()};`)
+    const foto = f => f.imagem ? `<img src="${esc(f.imagem)}" alt="Cartaz de ${esc(f.titulo)}">` : ""
+    const grid = document.querySelector(".grid")
+
+    fetch("/api/filmes").then(r => {
+      if (!r.ok) throw new Error("Falha ao carregar filmes")
+      return r.json()
+    }).then(lista => {
+      aviso.hidden = true
+      grid.innerHTML = lista.map(f => `
+        <a class="card" href="/filmes.html?id=${encodeURIComponent(f.id)}">
+          ${foto(f)}
+          <h3>${esc(f.titulo)}</h3>
+          <p>${esc(f.generos)} · ${esc(f.duracao)}</p>
+        </a>`).join("")
+    }).catch(() => aviso.textContent = "Não foi possível carregar os filmes")
+  </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "expo": {
+    "name": "cine-planet-app",
+    "slug": "cine-planet-app",
+    "android": { "usesCleartextTraffic": true }
+  }
+}

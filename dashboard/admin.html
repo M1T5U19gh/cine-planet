@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gerenciar filmes | Cine-Planet</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Barlow+Condensed:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin">
+  <aside>
+    <a class="logo" href="/">CINE-PLANET</a>
+    <form>
+      <h1>Novo filme</h1>
+      <input type="hidden" name="id">
+      <input type="hidden" name="imagem">
+      <label>Título <input name="titulo" required></label>
+      <label>Gêneros <input name="generos" required></label>
+      <label>Duração <input name="duracao" placeholder="1h 30min" required></label>
+      <label>Sinopse <textarea name="sinopse" rows="4" required></textarea></label>
+      <label>Imagem <input name="arquivo" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <label>Ano <input name="ano" type="number" min="1888" max="2100"></label>
+      <label>Diretor <input name="diretor"></label>
+      <label>Classificação <input name="classificacao"></label>
+      <p id="aviso" class="ouro"></p>
+      <button>Salvar</button>
+      <button type="button" class="secundario" onclick="location.reload()">Cancelar</button>
+    </form>
+  </aside>
+
+  <main>
+    <h1>Gerenciar filmes</h1>
+    <div id="lista"></div>
+  </main>
+
+  <script>
+    const esc = t => String(t ?? "").replace(/[&<>"']/g, c => `&#${c.charCodeAt()};`)
+    const form = document.querySelector("form")
+    let filmes = []
+
+    async function carregar() {
+      filmes = await (await fetch("/api/filmes")).json()
+      lista.innerHTML = filmes.map(f => `
+        <div class="item">
+          <div>
+            <h2>${esc(f.titulo)}</h2>
+            <p>${esc([f.ano, f.generos, f.duracao].filter(Boolean).join(" · "))}</p>
+          </div>
+          <div>
+            <button class="secundario" onclick="editar(${f.id})">Editar</button>
+            <button class="excluir" onclick="excluir(${f.id})">Excluir</button>
+          </div>
+        </div>`).join("")
+    }
+
+    function editar(id) {
+      const f = filmes.find(f => f.id == id)
+      for (const campo of form.elements) if (campo.name in f) campo.value = f[campo.name] ?? ""
+      form.querySelector("h1").textContent = "Editar filme"
+      scrollTo(0, 0)
+    }
+
+    async function excluir(id) {
+      if (!confirm("Excluir esse filme?")) return
+      await fetch("/api/filmes/" + id, { method: "DELETE" })
+      carregar()
+    }
+
+    form.onsubmit = async e => {
+      e.preventDefault()
+      const dados = new FormData(form)
+
+      if (dados.get("arquivo").size) { // tem foto nova: envia primeiro e guarda o caminho
+        const envio = await fetch("/api/filmes/upload", { method: "POST", body: dados })
+        const resposta = await envio.json()
+        if (!envio.ok) return aviso.textContent = resposta.message
+        dados.set("imagem", resposta.imagem)
+      }
+      dados.delete("arquivo")
+
+      const { id, ...filme } = Object.fromEntries([...dados].map(([k, v]) => [k, v || null]))
+      filme.ano = filme.ano && +filme.ano
+      const r = await fetch("/api/filmes" + (id ? "/" + id : ""), {
+        method: id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(filme)
+      })
+      if (r.ok) location.reload()
+      else aviso.textContent = (await r.json()).message
+    }
+
+    carregar()
+  </script>
+</body>
+</html>
