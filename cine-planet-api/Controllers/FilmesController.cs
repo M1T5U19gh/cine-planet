@@ -3,6 +3,16 @@ using MySqlConnector;
 
 public static class FilmesController
 {
+    private static readonly string[] ClassificacoesPermitidas = ["L", "10", "12", "14", "16", "18+"];
+
+    private static bool ClassificacaoPermitida(string classificacao)
+    {
+        return ClassificacoesPermitidas.Contains(classificacao, StringComparer.Ordinal);
+    }
+
+    private static IResult ErroClassificacao() =>
+        Results.BadRequest(new { message = "A classificação deve ser L, 10, 12, 14, 16 ou 18+." });
+
     public static void Map(WebApplication app, string conexao, string site)
     {
         var uploads = Path.Combine(site, "assets", "images", "uploads");
@@ -32,18 +42,24 @@ public static class FilmesController
                 : Results.Ok(filme);
         });
 
-        filmes.MapPost("/", async (Filme filme) =>
+        async Task<IResult> Criar(Filme filme)
         {
+            if (!ClassificacaoPermitida(filme.Classificacao)) return ErroClassificacao();
+
             await using var db = Banco();
             await db.OpenAsync();
             await db.ExecuteAsync(@"insert into filmes (titulo, generos, duracao, sinopse, imagem, ano, diretor, classificacao)
                                     values (@Titulo, @Generos, @Duracao, @Sinopse, @Imagem, @Ano, @Diretor, @Classificacao)", filme);
             var id = await db.ExecuteScalarAsync<int>("select last_insert_id()");
             return Results.Created($"/api/filmes/{id}", new { id });
-        });
+        }
+
+        filmes.MapPost("/", Criar);
 
         async Task<IResult> Atualizar(int id, Filme filme)
         {
+            if (!ClassificacaoPermitida(filme.Classificacao)) return ErroClassificacao();
+
             filme.Id = id;
             await using var db = Banco();
             var fotoAntiga = await db.ExecuteScalarAsync<string>(

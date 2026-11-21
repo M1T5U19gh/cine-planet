@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gerenciar filmes | Cine-Planet</title>
   <link rel="stylesheet" href="/style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Barlow+Condensed:wght@400;700&display=swap" rel="stylesheet">
-</head>
+ 
 <body class="admin">
   <aside>
     <a class="logo" href="/">CINE-PLANET</a>
@@ -21,7 +20,17 @@
       <label>Imagem <input name="arquivo" type="file" accept="image/jpeg,image/png,image/webp"></label>
       <label>Ano <input name="ano" type="number" min="1888" max="2100"></label>
       <label>Diretor <input name="diretor"></label>
-      <label>Classificação <input name="classificacao"></label>
+      <label>Classificação indicativa
+        <select name="classificacao" required>
+          <option value="" selected disabled>Selecione</option>
+          <option value="L">L (Livre)</option>
+          <option value="10">10 anos</option>
+          <option value="12">12 anos</option>
+          <option value="14">14 anos</option>
+          <option value="16">16 anos</option>
+          <option value="18+">18 anos</option>
+        </select>
+      </label>
       <p id="aviso" class="ouro"></p>
       <button>Salvar</button>
       <button type="button" class="secundario" onclick="location.reload()">Cancelar</button>

@@ -1,3 +1,5 @@
+export type ClassificacaoEtaria = "L" | "10" | "12" | "14" | "16" | "18+";
+
 export type Filme = {
   id: number;
   titulo: string;
@@ -7,5 +9,5 @@ export type Filme = {
   imagem: string | null;
   ano: number | null;
   diretor: string | null;
-  classificacao: string | null;
+  classificacao: ClassificacaoEtaria;
 };
