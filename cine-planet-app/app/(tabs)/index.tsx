@@ -1,35 +1,21 @@
-import Constants from "expo-constants";
-import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
-  Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-
-type Filme = {
-  id: number;
-  titulo: string;
-  generos: string | null;
-  duracao: string | null;
-  sinopse: string | null;
-  imagem: string | null;
-  ano: number | null;
-  diretor: string | null;
-  classificacao: string | null;
-};
+import { FilmeCard } from "@/components/FilmeCard";
+import { FilmeModal } from "@/components/FilmeModal";
+import { API_URL } from "@/constants/Api";
+import { Colors } from "@/constants/Colors";
+import type { Filme } from "@/types/Filme";
 
 type Aba = "Filmes" | "Sobre";
-
-const API_HOST = Constants.expoConfig?.hostUri?.split(":")[0] ?? "localhost";
-const API = `http://${API_HOST}:5292`;
 
 export default function HomeScreen() {
   const [filmes, setFilmes] = useState<Filme[]>([]);
@@ -39,7 +25,7 @@ export default function HomeScreen() {
   const lista = useRef<FlatList<Filme>>(null);
 
   useEffect(() => {
-    fetch(`${API}/api/filmes`)
+    fetch(`${API_URL}/api/filmes`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`A API respondeu com o status ${response.status}.`);
@@ -49,9 +35,7 @@ export default function HomeScreen() {
       .then((resultado) => {
         setFilmes(resultado);
         setAviso(
-          resultado.length > 0
-            ? ""
-            : "Nenhum filme por aqui ainda.",
+          resultado.length > 0 ? "" : "Nenhum filme por aqui ainda.",
         );
       })
       .catch((error: unknown) => {
@@ -67,24 +51,6 @@ export default function HomeScreen() {
     } else {
       lista.current?.scrollToEnd({ animated: true });
     }
-  };
-
-  const renderPoster = (filme: Filme, grande = false) => {
-    const posterStyle = grande ? styles.posterGrande : styles.poster;
-    if (filme.imagem) {
-      return (
-        <Image
-          source={{ uri: `${API}${filme.imagem}` }}
-          style={posterStyle}
-          resizeMode="cover"
-        />
-      );
-    }
-    return (
-      <View style={[posterStyle, styles.posterVazio]}>
-        <Text style={styles.posterVazioTexto}>CINE{"\n"}PLANET</Text>
-      </View>
-    );
   };
 
   return (
@@ -132,34 +98,16 @@ export default function HomeScreen() {
           ListEmptyComponent={
             <View style={styles.estadoVazio}>
               {aviso === "Carregando filmes..." ? (
-                <ActivityIndicator color={cores.ouro} />
+                <ActivityIndicator color={Colors.accent} />
               ) : null}
               <Text style={styles.aviso}>{aviso}</Text>
             </View>
           }
           renderItem={({ item: filme }) => (
-            <Pressable
-              accessibilityRole="button"
+            <FilmeCard
+              filme={filme}
               onPress={() => setFilmeAberto(filme)}
-              style={({ pressed }) => [
-                styles.cartaoFilme,
-                pressed && styles.cartaoPressionado,
-              ]}
-            >
-              {renderPoster(filme)}
-              <View style={styles.detalhesFilme}>
-                <Text style={styles.nomeFilme} numberOfLines={2}>
-                  {filme.titulo}
-                </Text>
-                <Text style={styles.textoCinza} numberOfLines={2}>
-                  {filme.generos || "Gênero não informado"}
-                </Text>
-                <Text style={styles.duracao}>
-                  {filme.duracao || "Duração não informada"}
-                </Text>
-              </View>
-              <Text style={styles.seta}>›</Text>
-            </Pressable>
+            />
           )}
           ListFooterComponent={
             <View style={styles.sobre}>
@@ -177,79 +125,19 @@ export default function HomeScreen() {
           }
         />
 
-        <Modal
-          visible={filmeAberto !== null}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setFilmeAberto(null)}
-        >
-          <ScrollView
-            style={styles.fundoModal}
-            contentContainerStyle={styles.conteudoModal}
-          >
-            {filmeAberto ? (
-              <View style={styles.cartaoModal}>
-                <View style={styles.cabecalhoModal}>
-                  {renderPoster(filmeAberto, true)}
-                  <View style={styles.detalhesModal}>
-                    <Text style={styles.nomeFilme}>
-                      {filmeAberto.titulo}
-                    </Text>
-                    <Text style={styles.textoCinza}>
-                      {filmeAberto.generos || "Gênero não informado"}
-                    </Text>
-                    <Text style={styles.duracao}>
-                      {filmeAberto.duracao || "Duração não informada"}
-                    </Text>
-                  </View>
-                </View>
-
-                {[
-                  { nome: "ANO", valor: filmeAberto.ano },
-                  { nome: "DIREÇÃO", valor: filmeAberto.diretor },
-                  {
-                    nome: "CLASSIFICAÇÃO",
-                    valor: filmeAberto.classificacao,
-                  },
-                ].map(({ nome, valor }) => (
-                  <Text key={nome} style={styles.metadado}>
-                    <Text style={styles.rotuloMetadado}>{nome}  </Text>
-                    {valor || "Não informado"}
-                  </Text>
-                ))}
-
-                <Text style={styles.sinopse}>
-                  {filmeAberto.sinopse || "Sinopse não informada."}
-                </Text>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => setFilmeAberto(null)}
-                  style={styles.botaoFechar}
-                >
-                  <Text style={styles.textoBotaoFechar}>FECHAR</Text>
-                </Pressable>
-              </View>
-            ) : null}
-          </ScrollView>
-        </Modal>
+        <FilmeModal
+          filme={filmeAberto}
+          onClose={() => setFilmeAberto(null)}
+        />
       </SafeAreaView>
     </SafeAreaProvider>
   );
 }
 
-const cores = {
-  fundo: "#0a0a0a",
-  cartao: "#111111",
-  borda: "#29251b",
-  ouro: "#c9a84c",
-  texto: "#f5f0e8",
-  cinza: "#92908b",
-};
-
 const styles = StyleSheet.create({
   tela: {
     flex: 1,
-    backgroundColor: cores.fundo,
+    backgroundColor: Colors.background,
   },
   navbar: {
     minHeight: 62,
@@ -258,10 +146,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: cores.borda,
+    borderBottomColor: Colors.border,
   },
   marca: {
-    color: cores.ouro,
+    color: Colors.accent,
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 2,
@@ -276,15 +164,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   abaAtiva: {
-    backgroundColor: "#2a2415",
+    backgroundColor: Colors.activeTab,
   },
   textoAba: {
-    color: "#cccccc",
+    color: Colors.secondaryText,
     fontSize: 13,
     fontWeight: "700",
   },
   textoAbaAtiva: {
-    color: cores.ouro,
+    color: Colors.accent,
   },
   conteudo: {
     paddingHorizontal: 20,
@@ -296,19 +184,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sobretitulo: {
-    color: cores.ouro,
+    color: Colors.accent,
     fontSize: 10,
     fontWeight: "800",
     letterSpacing: 1.8,
     marginBottom: 9,
   },
   titulo: {
-    color: cores.texto,
+    color: Colors.text,
     fontSize: 30,
     fontWeight: "800",
   },
   subtitulo: {
-    color: cores.cinza,
+    color: Colors.muted,
     fontSize: 13,
     marginTop: 6,
   },
@@ -319,154 +207,37 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   aviso: {
-    color: cores.texto,
+    color: Colors.text,
     textAlign: "center",
     paddingHorizontal: 20,
-  },
-  cartaoFilme: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderRadius: 18,
-    backgroundColor: cores.cartao,
-    borderWidth: 1,
-    borderColor: "#222222",
-  },
-  cartaoPressionado: {
-    borderColor: cores.ouro,
-    opacity: 0.85,
-  },
-  poster: {
-    width: 76,
-    height: 104,
-    borderRadius: 10,
-    backgroundColor: "#1a1a1a",
-  },
-  posterGrande: {
-    width: 112,
-    height: 168,
-    borderRadius: 12,
-    backgroundColor: "#1a1a1a",
-  },
-  posterVazio: {
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: cores.borda,
-  },
-  posterVazioTexto: {
-    color: cores.ouro,
-    fontSize: 10,
-    fontWeight: "800",
-    letterSpacing: 1,
-    textAlign: "center",
-    lineHeight: 16,
-  },
-  detalhesFilme: {
-    flex: 1,
-    marginLeft: 14,
-  },
-  nomeFilme: {
-    color: cores.texto,
-    fontSize: 17,
-    fontWeight: "700",
-    marginBottom: 6,
-  },
-  textoCinza: {
-    color: cores.cinza,
-    fontSize: 12,
-  },
-  duracao: {
-    color: cores.ouro,
-    fontSize: 12,
-    marginTop: 8,
-  },
-  seta: {
-    color: cores.ouro,
-    fontSize: 25,
-    marginLeft: 8,
-    marginRight: 2,
   },
   sobre: {
     marginTop: 20,
     padding: 20,
     borderRadius: 18,
-    backgroundColor: cores.cartao,
+    backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: "#222222",
+    borderColor: Colors.cardBorder,
   },
   tituloSobre: {
-    color: cores.texto,
+    color: Colors.text,
     fontSize: 20,
     fontWeight: "700",
     marginBottom: 8,
   },
   textoSobre: {
-    color: cores.cinza,
+    color: Colors.muted,
     fontSize: 13,
     lineHeight: 21,
   },
   linhaSobre: {
     height: 1,
-    backgroundColor: cores.borda,
+    backgroundColor: Colors.border,
     marginTop: 18,
     marginBottom: 14,
   },
   rodape: {
-    color: cores.cinza,
+    color: Colors.muted,
     fontSize: 11,
-  },
-  fundoModal: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.82)",
-  },
-  conteudoModal: {
-    flexGrow: 1,
-    justifyContent: "center",
-    padding: 18,
-  },
-  cartaoModal: {
-    padding: 20,
-    borderRadius: 20,
-    backgroundColor: "#111111",
-    borderWidth: 1,
-    borderColor: cores.borda,
-  },
-  cabecalhoModal: {
-    flexDirection: "row",
-    gap: 16,
-    marginBottom: 8,
-  },
-  detalhesModal: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  metadado: {
-    color: "#cccccc",
-    fontSize: 13,
-    marginTop: 12,
-  },
-  rotuloMetadado: {
-    color: cores.ouro,
-    fontSize: 10,
-    fontWeight: "800",
-    letterSpacing: 1.2,
-  },
-  sinopse: {
-    color: "#cccccc",
-    fontSize: 14,
-    lineHeight: 22,
-    marginVertical: 20,
-  },
-  botaoFechar: {
-    alignSelf: "flex-end",
-    paddingVertical: 8,
-    paddingLeft: 16,
-  },
-  textoBotaoFechar: {
-    color: cores.ouro,
-    fontSize: 11,
-    fontWeight: "800",
-    letterSpacing: 1.5,
   },
 });
