@@ -6,7 +6,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context"
 import { FlatList, Image, Modal, Pressable, ScrollView, Text, View } from "react-native"
 
 // usa o IP do computador que está rodando o Expo (a API roda na porta 5292)
-const API = `http://${Constants.expoConfig?.hostUri?.split(":")[0] ?? "localhost"}:5292`
+const API = `http://${Constants.expoConfig?.hostUri?.split(":")[0] ?? "localhost"}:5000`
 
 function App() {
   const [filmes, setFilmes] = useState([])
