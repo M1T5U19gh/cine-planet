@@ -17,7 +17,14 @@
       <label>Gêneros <input name="generos" required></label>
       <label>Duração <input name="duracao" placeholder="1h 30min" required></label>
       <label>Sinopse <textarea name="sinopse" rows="4" required></textarea></label>
-      <label>Imagem <input name="arquivo" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <div class="campo-imagem">
+        <label for="arquivo">Imagem</label>
+        <div class="seletor-imagem">
+          <input id="arquivo" name="arquivo" type="file" accept="image/jpeg,image/png,image/webp">
+          <label class="botao-imagem" for="arquivo">Escolher imagem</label>
+          <span id="nome-imagem" aria-live="polite"></span>
+        </div>
+      </div>
       <label>Ano <input name="ano" type="number" min="1888" max="2100"></label>
       <label>Diretor <input name="diretor"></label>
       <label>Classificação indicativa
@@ -45,7 +52,13 @@
   <script>
     const esc = t => String(t ?? "").replace(/[&<>"']/g, c => `&#${c.charCodeAt()};`)
     const form = document.querySelector("form")
+    const arquivo = document.querySelector("#arquivo")
+    const nomeImagem = document.querySelector("#nome-imagem")
     let filmes = []
+
+    arquivo.addEventListener("change", () => {
+      nomeImagem.textContent = arquivo.files[0]?.name ?? ""
+    })
 
     async function carregar() {
       filmes = await (await fetch("/api/filmes")).json()
