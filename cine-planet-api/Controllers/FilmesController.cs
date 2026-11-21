@@ -17,25 +17,35 @@ public static class FilmesController
         var filmes = app.MapGroup("/api/filmes");
 
         filmes.MapGet("/", async () =>
-            await Banco().QueryAsync<Filme>("select * from filmes order by titulo"));
+        {
+            await using var db = Banco();
+            return await db.QueryAsync<Filme>("select * from filmes order by titulo");
+        });
 
         filmes.MapGet("/{id:int}", async (int id) =>
-            await Banco().QuerySingleOrDefaultAsync<Filme>(
-                "select * from filmes where id = @id", new { id }) is { } filme
-                    ? Results.Ok(filme)
-                    : Results.NotFound(new { message = "Filme não encontrado." }));
+        {
+            await using var db = Banco();
+            var filme = await db.QuerySingleOrDefaultAsync<Filme>(
+                "select * from filmes where id = @id", new { id });
+            return filme is null
+                ? Results.NotFound(new { message = "Filme não encontrado." })
+                : Results.Ok(filme);
+        });
 
         filmes.MapPost("/", async (Filme filme) =>
         {
-            await Banco().ExecuteAsync(@"insert into filmes (titulo, generos, duracao, sinopse, imagem, ano, diretor, classificacao)
-                                         values (@Titulo, @Generos, @Duracao, @Sinopse, @Imagem, @Ano, @Diretor, @Classificacao)", filme);
-            return Results.Ok();
+            await using var db = Banco();
+            await db.OpenAsync();
+            await db.ExecuteAsync(@"insert into filmes (titulo, generos, duracao, sinopse, imagem, ano, diretor, classificacao)
+                                    values (@Titulo, @Generos, @Duracao, @Sinopse, @Imagem, @Ano, @Diretor, @Classificacao)", filme);
+            var id = await db.ExecuteScalarAsync<int>("select last_insert_id()");
+            return Results.Created($"/api/filmes/{id}", new { id });
         });
 
-        filmes.MapPut("/{id:int}", async (int id, Filme filme) =>
+        async Task<IResult> Atualizar(int id, Filme filme)
         {
             filme.Id = id;
-            var db = Banco();
+            await using var db = Banco();
             var fotoAntiga = await db.ExecuteScalarAsync<string>(
                 "select imagem from filmes where id = @id", new { id });
             var alterados = await db.ExecuteAsync(@"update filmes set titulo = @Titulo, generos = @Generos, duracao = @Duracao, sinopse = @Sinopse,
@@ -43,21 +53,29 @@ public static class FilmesController
             if (alterados == 0) return Results.NotFound(new { message = "Filme não encontrado." });
             if (fotoAntiga != filme.Imagem) ApagarFoto(fotoAntiga);
             return Results.Ok();
-        });
+        }
+
+        filmes.MapPost("/{id:int}", Atualizar);
+        filmes.MapPut("/{id:int}", Atualizar);
 
         filmes.MapDelete("/{id:int}", async (int id) =>
         {
-            var db = Banco();
+            await using var db = Banco();
             var foto = await db.ExecuteScalarAsync<string>(
                 "select imagem from filmes where id = @id", new { id });
-            await db.ExecuteAsync("delete from filmes where id = @id", new { id });
+            var removidos = await db.ExecuteAsync("delete from filmes where id = @id", new { id });
+            if (removidos == 0) return Results.NotFound(new { message = "Filme não encontrado." });
             ApagarFoto(foto);
             return Results.NoContent();
         });
 
         filmes.MapPost("/upload", async (HttpRequest req) =>
         {
-            var arquivo = (await req.ReadFormAsync()).Files[0];
+            var formulario = await req.ReadFormAsync();
+            if (formulario.Files.Count == 0)
+                return Results.BadRequest(new { message = "Selecione uma imagem para enviar." });
+
+            var arquivo = formulario.Files[0];
             var extensao = Path.GetExtension(arquivo.FileName).ToLower();
             if (!new[] { ".jpg", ".jpeg", ".png", ".webp" }.Contains(extensao))
                 return Results.BadRequest(new { message = "Envie uma imagem JPG, PNG ou WebP." });

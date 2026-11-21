@@ -81,7 +81,7 @@
       const { id, ...filme } = Object.fromEntries([...dados].map(([k, v]) => [k, v || null]))
       filme.ano = filme.ano && +filme.ano
       const r = await fetch("/api/filmes" + (id ? "/" + id : ""), {
-        method: id ? "PUT" : "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(filme)
       })

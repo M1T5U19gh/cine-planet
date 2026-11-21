@@ -1,25 +1,32 @@
 using Microsoft.Extensions.FileProviders;
 
-// Execute `dotnet run` nesta pasta; o site e o dashboard ficam nas pastas irmãs.
-var site = Path.GetFullPath("../cine-planet-site");
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = args });
+var contentRoot = builder.Environment.ContentRootPath;
+var site = Path.GetFullPath(Path.Combine(contentRoot, "..", "cine-planet-site"));
+var dashboard = Path.GetFullPath(Path.Combine(contentRoot, "..", "dashboard"));
+var conexao = builder.Configuration.GetConnectionString("CinePlanet")
+    ?? throw new InvalidOperationException("A connection string 'CinePlanet' não foi configurada.");
 
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = args, WebRootPath = site });
-//builder.WebHost.UseUrls("http://0.0.0.0:5292"); //escolhe o localhost
 builder.Services.AddCors();
-var conexao = builder.Configuration.GetConnectionString("CinePlanet");
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
-app.UseExceptionHandler(e => e.Run(c =>
-{
-    c.Response.StatusCode = 400;
-    return c.Response.WriteAsJsonAsync(new { message = "Não deu pra salvar: título repetido ou campo faltando." });
-}));
+app.Urls.Add("http://0.0.0.0:5292");
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 app.UseCors(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseDefaultFiles(new DefaultFilesOptions
+{
+    FileProvider = new PhysicalFileProvider(site)
+});
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(Path.GetFullPath("../dashboard")),
+    FileProvider = new PhysicalFileProvider(site)
+});
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(dashboard),
     RequestPath = "/dashboard"
 });
 
