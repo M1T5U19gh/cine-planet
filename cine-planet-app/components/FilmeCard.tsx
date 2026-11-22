@@ -31,7 +31,6 @@ export function FilmeCard({ filme, onPress }: Props) {
           {filme.duracao || "Duração não informada"}
         </Text>
       </View>
-      <Text style={styles.seta}>›</Text>
     </Pressable>
   );
 }
@@ -68,11 +67,5 @@ const styles = StyleSheet.create({
     color: Colors.accent,
     fontSize: 12,
     marginTop: 8,
-  },
-  seta: {
-    color: Colors.accent,
-    fontSize: 25,
-    marginLeft: 8,
-    marginRight: 2,
   },
 });

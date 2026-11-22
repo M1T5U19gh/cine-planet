@@ -30,11 +30,7 @@ export function ListaFilmes({
       contentContainerStyle={styles.conteudo}
       ListHeaderComponent={
         <View style={styles.cabecalho}>
-          <Text style={styles.sobretitulo}>DESCUBRA SEU PRÓXIMO FILME</Text>
           <Text style={styles.titulo}>Cine-Planet</Text>
-          <Text style={styles.subtitulo}>
-            Histórias para assistir, mundos para explorar.
-          </Text>
         </View>
       }
       ListEmptyComponent={
@@ -50,13 +46,11 @@ export function ListaFilmes({
       )}
       ListFooterComponent={
         <View style={styles.sobre}>
-          <Text style={styles.sobretitulo}>SOBRE</Text>
           <Text style={styles.tituloSobre}>Cine-Planet</Text>
           <Text style={styles.textoSobre}>
             Um espaço simples para descobrir filmes e escolher o que assistir a
             seguir.
           </Text>
-          <View style={styles.linhaSobre} />
           <Text style={styles.rodape}>
             © 2026 Cine-Planet · Poá, São Paulo
           </Text>
@@ -76,22 +70,10 @@ const styles = StyleSheet.create({
   cabecalho: {
     marginBottom: 12,
   },
-  sobretitulo: {
-    color: Colors.accent,
-    fontSize: 10,
-    fontWeight: "800",
-    letterSpacing: 1.8,
-    marginBottom: 9,
-  },
   titulo: {
     color: Colors.text,
     fontSize: 30,
     fontWeight: "800",
-  },
-  subtitulo: {
-    color: Colors.muted,
-    fontSize: 13,
-    marginTop: 6,
   },
   estadoVazio: {
     minHeight: 160,
@@ -122,12 +104,6 @@ const styles = StyleSheet.create({
     color: Colors.muted,
     fontSize: 13,
     lineHeight: 21,
-  },
-  linhaSobre: {
-    height: 1,
-    backgroundColor: Colors.border,
-    marginTop: 18,
-    marginBottom: 14,
   },
   rodape: {
     color: Colors.muted,
