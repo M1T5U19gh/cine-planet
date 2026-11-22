@@ -12,7 +12,7 @@ builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
-app.Urls.Add("http://0.0.0.0:5292");
+//app.Urls.Add("http://0.0.0.0:5292");
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseCors(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
