@@ -48,8 +48,7 @@ export function ListaFilmes({
         <View style={styles.sobre}>
           <Text style={styles.tituloSobre}>Cine-Planet</Text>
           <Text style={styles.textoSobre}>
-            Um espaço simples para descobrir filmes e escolher o que assistir a
-            seguir.
+            O Cine-Planet reúne informações sobre filmes para você escolher o que assistir.
           </Text>
           <Text style={styles.rodape}>
             © 2026 Cine-Planet · Poá, São Paulo
@@ -108,5 +107,6 @@ const styles = StyleSheet.create({
   rodape: {
     color: Colors.muted,
     fontSize: 11,
+    marginTop: 12,
   },
 });
