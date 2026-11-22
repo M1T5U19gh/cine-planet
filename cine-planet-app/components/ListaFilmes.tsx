@@ -1,6 +1,5 @@
 import type { Ref } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
@@ -40,9 +39,6 @@ export function ListaFilmes({
       }
       ListEmptyComponent={
         <View style={styles.estadoVazio}>
-          {aviso === "Carregando filmes..." ? (
-            <ActivityIndicator color={Colors.accent} />
-          ) : null}
           <Text style={styles.aviso}>{aviso}</Text>
         </View>
       }

@@ -76,6 +76,17 @@ section h2 {
   margin-bottom: 20px;
   font-size: clamp(2rem, 4vw, 3.2rem);
 }
+.filme-detalhe main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 80px;
+}
+.filme-detalhe main section {
+  width: 100%;
+  max-width: 1480px;
+  padding: 48px 64px;
+}
 #sobre {
   padding-top: 60px;
   padding-bottom: 80px;
@@ -169,41 +180,68 @@ dialog b {
   line-height: 1.8;
 }
 .detalhe {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 28px;
-  padding: 24px;
-  background: #111;
-  border: 1px solid #c9a84c;
-  border-radius: 8px;
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(36px, 6vw, 88px);
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 .detalhe[hidden] {
   display: none;
 }
 .detalhe img {
-  width: min(260px, 100%);
-  align-self: flex-start;
-  border-radius: 6px;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 4px;
 }
 .detalhe div {
-  flex: 1 1 280px;
+  min-width: 0;
 }
 .detalhe h1 {
-  margin-bottom: 6px;
+  margin-bottom: 18px;
+  font-size: clamp(3rem, 5vw, 5rem);
+  line-height: 1.05;
+}
+.detalhe .ouro {
+  margin-bottom: 38px;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+}
+.detalhe div > p:not(.ouro):not(.sinopse) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 20px;
+  margin-bottom: 22px;
+  color: #f5f0e8;
+  font-size: 1.25rem;
 }
 .detalhe b {
-  display: block;
-  margin-top: 10px;
+  flex: 0 0 170px;
   color: #c9a84c;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
+.detalhe .sinopse {
+  max-width: 68ch;
+  margin: 38px 0;
+  color: #ccc;
+  font-size: 1.25rem;
+  line-height: 1.9;
+}
 .voltar {
   display: inline-block;
-  margin-top: 12px;
+  margin-top: 8px;
+  padding-bottom: 4px;
   color: #c9a84c;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #c9a84c;
 }
 
 /* botões e formulários (usados também no dashboard) */
@@ -334,5 +372,34 @@ select {
   }
   section {
     padding: 100px 20px 20px;
+  }
+  .filme-detalhe main section {
+    padding: 28px 20px;
+  }
+  .detalhe {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+  .detalhe img {
+    width: min(280px, 100%);
+    margin: 0 auto;
+  }
+  .detalhe h1 {
+    font-size: clamp(2.4rem, 9vw, 3.5rem);
+  }
+  .detalhe .ouro {
+    margin-bottom: 28px;
+    font-size: 1.1rem;
+  }
+  .detalhe div > p:not(.ouro):not(.sinopse) {
+    font-size: 1.1rem;
+    margin-bottom: 18px;
+  }
+  .detalhe b {
+    flex-basis: 145px;
+  }
+  .detalhe .sinopse {
+    margin: 30px 0;
+    font-size: 1.1rem;
   }
 }
